@@ -17,5 +17,9 @@ namespace EventHub.Models
         public Address Address { get; set; }
 
         public Badge? Badge { get; set; }
+
+        public ICollection<Registration>? Registrations { get; set; } = new HashSet<Registration>();
+
+       
     }
 }

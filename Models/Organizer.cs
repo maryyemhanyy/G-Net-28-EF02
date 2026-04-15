@@ -17,5 +17,7 @@ namespace EventHub.Models
         public bool VerifiedStatus { get; set; }
 
         public OrganizerProfile Profile { get; set; }
+
+        public ICollection<Event>? Events { get; set; } = new HashSet<Event>();
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -31,9 +32,10 @@ namespace EventHub.Configurations
 
             builder.Property(e => e.ModifiedDate).IsRequired().HasDefaultValueSql("GETDATE()");
 
-
-
-
+           builder.HasOne(e => e.ParentEvent)
+                  .WithMany(e => e.Sessions)
+                  .HasForeignKey(e => e.ParentEventId)
+                  .OnDelete(DeleteBehavior.Restrict);
 
         }
     }

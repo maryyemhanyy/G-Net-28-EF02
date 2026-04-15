@@ -102,6 +102,12 @@ namespace EventHub.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETDATE()");
 
+                    b.Property<int>("OrganizerId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ParentEventId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
@@ -110,6 +116,10 @@ namespace EventHub.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OrganizerId");
+
+                    b.HasIndex("ParentEventId");
 
                     b.ToTable("Events", (string)null);
                 });
@@ -167,11 +177,11 @@ namespace EventHub.Migrations
 
             modelBuilder.Entity("EventHub.Models.Registration", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("EventId")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<int>("AttendeeId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Note")
                         .HasColumnType("nvarchar(max)");
@@ -181,7 +191,9 @@ namespace EventHub.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETDATE()");
 
-                    b.HasKey("Id");
+                    b.HasKey("EventId", "AttendeeId");
+
+                    b.HasIndex("AttendeeId");
 
                     b.ToTable(" Registrations", (string)null);
                 });
@@ -213,8 +225,10 @@ namespace EventHub.Migrations
 
                             b1.ToTable("Attendees");
 
-                            b1.WithOwner()
+                            b1.WithOwner("Attendee")
                                 .HasForeignKey("AttendeeId");
+
+                            b1.Navigation("Attendee");
                         });
 
                     b.Navigation("Address")
@@ -232,6 +246,24 @@ namespace EventHub.Migrations
                     b.Navigation("Attendees");
                 });
 
+            modelBuilder.Entity("EventHub.Models.Event", b =>
+                {
+                    b.HasOne("EventHub.Models.Organizer", "Organizer")
+                        .WithMany("Events")
+                        .HasForeignKey("OrganizerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EventHub.Models.Event", "ParentEvent")
+                        .WithMany("Sessions")
+                        .HasForeignKey("ParentEventId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Organizer");
+
+                    b.Navigation("ParentEvent");
+                });
+
             modelBuilder.Entity("EventHub.Models.OrganizerProfile", b =>
                 {
                     b.HasOne("EventHub.Models.Organizer", "Organizer")
@@ -243,13 +275,43 @@ namespace EventHub.Migrations
                     b.Navigation("Organizer");
                 });
 
+            modelBuilder.Entity("EventHub.Models.Registration", b =>
+                {
+                    b.HasOne("EventHub.Models.Attendee", "Attendee")
+                        .WithMany("Registrations")
+                        .HasForeignKey("AttendeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EventHub.Models.Event", "Event")
+                        .WithMany("Registrations")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Attendee");
+
+                    b.Navigation("Event");
+                });
+
             modelBuilder.Entity("EventHub.Models.Attendee", b =>
                 {
                     b.Navigation("Badge");
+
+                    b.Navigation("Registrations");
+                });
+
+            modelBuilder.Entity("EventHub.Models.Event", b =>
+                {
+                    b.Navigation("Registrations");
+
+                    b.Navigation("Sessions");
                 });
 
             modelBuilder.Entity("EventHub.Models.Organizer", b =>
                 {
+                    b.Navigation("Events");
+
                     b.Navigation("Profile")
                         .IsRequired();
                 });

@@ -22,5 +22,16 @@ namespace EventHub.Models
 
         public DateTime ModifiedDate { get; set; }
 
+        public Organizer Organizer { get; set; }
+
+        public int OrganizerId { get; set; }
+
+        public Event? ParentEvent { get; set; }
+
+        public int? ParentEventId { get; set; }
+
+        public ICollection<Registration>? Registrations { get; set; } = new HashSet<Registration>();
+        public ICollection<Event> Sessions { get; set; } = new List<Event>();
+
     }
 }
